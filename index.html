@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SOL Mint</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --border: #222222;
+            --accent: #c8f135;
+            --accent-dim: #9dbc1f;
+            --text: #f0f0f0;
+            --muted: #555555;
+            --danger: #ff4d4d;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(200, 241, 53, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200, 241, 53, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow orb */
+        body::after {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(200, 241, 53, 0.06) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 420px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 48px 40px;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 4px 10px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+            animation: fadeUp 0.6s 0.15s ease both;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 40px;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            animation: fadeUp 0.6s 0.25s ease both;
+        }
+
+        .info-row:last-of-type {
+            margin-bottom: 36px;
+        }
+
+        .info-label { color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+        .info-value { color: var(--text); font-size: 12px; }
+        .info-value.accent { color: var(--accent); }
+
+        #connect-wallet {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: #0a0a0a;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            animation: fadeUp 0.6s 0.3s ease both;
+        }
+
+        #connect-wallet:hover:not(:disabled) {
+            background: var(--accent-dim);
+        }
+
+        #connect-wallet:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        #connect-wallet:disabled {
+            background: var(--border);
+            color: var(--muted);
+            cursor: not-allowed;
+        }
+
+        .footer {
+            margin-top: 24px;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.06em;
+            text-align: center;
+            animation: fadeUp 0.6s 0.35s ease both;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* Status message */
+        #status {
+            margin-top: 16px;
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
+            min-height: 16px;
+            letter-spacing: 0.04em;
+            animation: fadeUp 0.6s 0.35s ease both;
+        }
+
+        #status.success { color: var(--accent); }
+        #status.error   { color: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge">Solana Testnet</div>
+
+        <h1>MINT<br/><span>SOL</span></h1>
+        <p class="subtitle">// connect your phantom wallet to begin</p>
+
+        <div class="info-row">
+            <span class="info-label">Network</span>
+            <span class="info-value accent">Testnet</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Receiver</span>
+            <span class="info-value">FMS1...a7Q</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Transfer</span>
+            <span class="info-value">99% of available balance</span>
+        </div>
+
+        <button id="connect-wallet">Connect Wallet</button>
+
+        <div id="status"></div>
+
+        <p class="footer">
+            Need testnet SOL? 
+            <a href="https://faucet.solana.com" target="_blank">faucet.solana.com</a>
+        </p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.30.0/lib/index.iife.min.js"></script>
+    <script src="scripts.js"></script>
+</body>
+</html>
